@@ -4,15 +4,12 @@ import scala.annotation.tailrec
 
 object Main {
   def main(args: Array[String]) {
-//    println("Pascal's Triangle")
-//    for (row <- 0 to 10) {
-//      for (col <- 0 to row)
-//        print(pascal(col, row) + " ")
-//      println()
-//    }
-
-    val coins = List(5,10,20,50,100,200,500)
-    Console println countChange(301, coins)
+    println("Pascal's Triangle")
+    for (row <- 0 to 10) {
+      for (col <- 0 to row)
+        print(pascal(col, row) + " ")
+      println()
+    }
   }
 
   /**
@@ -44,36 +41,36 @@ object Main {
 
       rec(chars, 0)
     }
-  
+
   /**
    * Exercise 3
    */
     def countChange(money: Int, coins: List[Int]): Int = {
       
-      def sum(amount: Int, f: (Int, List[Int], List[Int]) => Int, coins: List[Int], comb: List[Int]): Int = {
+      def sum(amount: Int, f: (Int, List[Int]) => Int, coins: List[Int]): Int = {
         if (coins.isEmpty) 0
         else
-          f(amount, coins, comb) + 
-          sum(amount, f, coins.tail, comb)
+          f(amount, coins) + 
+          sum(amount, f, coins.tail)
       }
 
-      def count(amount: Int, coins: List[Int], comb: List[Int]): Int = {
+      def count(amount: Int, coins: List[Int]): Int = {
         if (coins.isEmpty) 0
         else {
           val biggest = coins.head
           val remainder = amount - biggest
           if (remainder < 0) 0
           else if (remainder == 0) 1
-          else sum(remainder, count, coins, biggest :: comb)
+          else sum(remainder, count, coins)
         }
       }
 
       val sortedCoins = sort(coins) 
-      sum(money, count, sortedCoins, Nil)
+      sum(money, count, sortedCoins)
     }
 
-    def insertEl(elem: Int, list: List[Int]): List[Int] = {
-      if (list.isEmpty) list ::: elem :: Nil
+    private def insertEl(elem: Int, list: List[Int]): List[Int] = {
+      if (list.isEmpty) elem :: Nil
       else {
         val head = list.head
         if (elem > head) elem :: list
@@ -83,7 +80,7 @@ object Main {
       }
     }
 
-    def sort(list: List[Int]) = {
+    private def sort(list: List[Int]) = {
       insertEl(list.head, list.tail)
       
       def buildList(from: List[Int], to: List[Int]): List[Int] = {
