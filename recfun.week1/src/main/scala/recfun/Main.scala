@@ -10,6 +10,8 @@ object Main {
         print(pascal(col, row) + " ")
       println()
     }
+    
+    Console println countChange(100, Nil)
   }
 
   /**
@@ -65,7 +67,8 @@ object Main {
         }
       }
 
-      val sortedCoins = sort(coins) 
+      val sortedCoins = if(!coins.isEmpty) sort(coins)
+                        else Nil
       sum(money, count, sortedCoins)
     }
 
