@@ -1,6 +1,7 @@
 package patmat
 
 import common._
+import scala.annotation.tailrec
 
 /**
  * Assignment 4: Huffman coding
@@ -24,10 +25,16 @@ object Huffman {
   
 
   // Part 1: Basics
-    def weight(tree: CodeTree): Int = ??? // tree match ...
+    def weight(tree: CodeTree): Int = tree match {
+      case l: Leaf => l.weight
+      case f: Fork => weight(f.left) + weight(f.right)
+    }
   
-    def chars(tree: CodeTree): List[Char] = ??? // tree match ...
-  
+    def chars(tree: CodeTree): List[Char] = tree match {
+      case l: Leaf => l.char :: Nil
+      case f: Fork => chars(f.left) ::: chars(f.right)
+    }
+
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
 
@@ -69,8 +76,23 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-    def times(chars: List[Char]): List[(Char, Int)] = ???
-  
+    def times(chars: List[Char]): List[(Char, Int)] = {
+      
+      def getCurrMapResult(c: Char, result: Map[Char, Int]) = 
+        if (!result.contains(c)) result + (c -> 1)
+        else {
+          val count = result.get(c).get
+          result.updated(c, count + 1)
+        }
+
+      def charsCount(chars: List[Char], result: Map[Char, Int]): List[(Char, Int)] = chars match {
+        case Nil => result.toList
+        case x :: xs => charsCount(xs, getCurrMapResult(x, result))
+      }
+
+      charsCount(chars, Map())
+  }
+
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
    *
@@ -78,12 +100,26 @@ object Huffman {
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
+      
+      @tailrec
+      def createLeaves(source: List[(Char, Int)], dest: List[Leaf]): List[Leaf] = source match {
+        case Nil => dest
+        case (c, count) :: xs => createLeaves(xs, Leaf(c, count) :: dest)
+      }
+
+      val result = createLeaves(freqs, Nil)
+
+      result.sortWith(_.weight < _.weight)
+    }
   
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = ???
+    def singleton(trees: List[CodeTree]): Boolean = trees match {
+      case x :: Nil => true
+      case _        => false
+    }
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -97,7 +133,27 @@ object Huffman {
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-    def combine(trees: List[CodeTree]): List[CodeTree] = ???
+    def combine(trees: List[CodeTree]): List[CodeTree] = {
+      
+      def combineInternal(trees: List[CodeTree]): List[CodeTree] = trees match {
+        case x :: y :: tail => {
+          val codeTree = makeCodeTree(x, y)
+          combineInternal(???)
+        }
+
+        case _ => trees
+      }
+
+      def getWeight(codeTree: CodeTree) = codeTree match {
+        case x: Leaf => x.weight
+        case x: Fork => x.weight
+      }
+
+      val ascSortCodeTree = (a: CodeTree, b: CodeTree) => getWeight(a) < getWeight(b)
+      val sortedCodeTree = trees.sortWith(ascSortCodeTree)
+      
+      combineInternal(sortedCodeTree)
+    }
   
   /**
    * This function will be called in the following way:
