@@ -118,43 +118,37 @@ object Anagrams {
         case x :: xs => (el :: x :: Nil) :: combine(el, xs)
       }
 
-    def combine2(el: (Char, Int), list: List[List[(Char, Int)]]): List[List[(Char, Int)]] = 
-      list match {
-        case Nil      => Nil
-        case x :: Nil => combine(el, Nil) 
-        case x :: xs  => {
-
-          for {
-            head <- x;
-            res <- combine2(head, if (xs.isEmpty) Nil else xs)
-          } yield res
-        }
-      }
-
-    def getFlatResult2(head: List[(Char,Int)], tail: List[List[(Char, Int)]]): List[List[(Char, Int)]] = 
-      tail match {
-        case Nil => Nil
-        case x :: xs => {
-          val res1 = getFlatResult(x, tail)
-          val res2 = getFlatResult2(x, xs)
-          
-          res1 ++ res2
-        }
-    }
-
-    def getFlatResult(head: List[(Char,Int)], tail: List[List[(Char, Int)]]) = 
-      for {
-        el <- head; 
-        res <- combine(el, if (tail.isEmpty) Nil else tail.head)
-      } yield res
+    def getFlatResult(input: List[List[(Char, Int)]]) = for {
+      i <- input.head
+      j <- combine(i, if (input.tail.isEmpty) Nil else input.tail.head)
+    } yield j
 
     def loop(list: List[List[(Char, Int)]]): List[List[(Char, Int)]] = list match {
       case Nil      => Nil
-      case x :: Nil => getFlatResult(x, Nil)
-      case x :: xs  => getFlatResult(x, xs) ::: loop(xs)
+      case x :: xs  => getFlatResult(x :: xs) ::: loop(xs)
     }
 
-    // Result: List(List((a,1), (a,2)), List((b,1), (b,2)), List((c,1), (c,2)))
+    def general(list: List[List[(Char, Int)]]): List[List[(Char, Int)]] = list match {
+      case Nil => Nil
+      case x :: Nil => getFlatResult(x :: Nil)
+      case x :: xs => {
+        val elem = x
+        val cache = loop(xs)
+
+//        Console println s"Cache: ${cache}"
+//        Console println s"Head: ${x}"  
+        
+        val headToList =  for (el <- x) yield List(el)
+
+        val res = for {
+          head <- elem
+          remain <- cache
+        } yield head :: remain
+
+        headToList ::: res ::: general(xs)
+      }
+    }
+
     List() :: loop(result)
   }
 
