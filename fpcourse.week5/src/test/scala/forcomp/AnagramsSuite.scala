@@ -10,6 +10,13 @@ import Anagrams._
 @RunWith(classOf[JUnitRunner])
 class AnagramsSuite extends FunSuite  {
 
+//  test("wordOccurrences: teststring") {
+//    val occurr = wordOccurrences("teststring")
+//    Console println occurr
+//    assert(false)
+////    assert(wordOccurrences("abcd") === List(('a', 1), ('b', 1), ('c', 1), ('d', 1)))
+//  }
+
   test("wordOccurrences: abcd") {
     assert(wordOccurrences("abcd") === List(('a', 1), ('b', 1), ('c', 1), ('d', 1)))
   }
@@ -36,17 +43,17 @@ class AnagramsSuite extends FunSuite  {
   test("word anagrams: player") {
     assert(wordAnagrams("player").toSet === Set("parley", "pearly", "player", "replay"))
   }
-
-
-
+//
+//
+//
   test("subtract: lard - r") {
     val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
     val r = List(('r', 1))
     val lad = List(('a', 1), ('d', 1), ('l', 1))
     assert(subtract(lard, r) === lad)
   }
-
-
+//
+//
   test("combinations: []") {
     assert(combinations(Nil) === List(Nil))
   }
@@ -68,13 +75,13 @@ class AnagramsSuite extends FunSuite  {
   }
 
 
-  test("sentence anagrams: []") {
-    val sentence = List()
-    assert(sentenceAnagrams(sentence) === List(Nil))
-  }
-
+//  test("sentence anagrams: []") {
+//    val sentence = List()
+//    assert(sentenceAnagrams(sentence) === List(Nil))
+//  }
+//
   test("sentence anagrams: Linux rulez") {
-    val sentence = List("Linux", "rulez")
+    val sentence = List("aa", "bb", "cc")
     val anas = List(
       List("Rex", "Lin", "Zulu"),
       List("nil", "Zulu", "Rex"),
