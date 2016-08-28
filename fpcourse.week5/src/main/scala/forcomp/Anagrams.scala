@@ -124,11 +124,6 @@ object Anagrams {
     } yield j
 
     def loop(list: List[List[(Char, Int)]]): List[List[(Char, Int)]] = list match {
-      case Nil      => Nil
-      case x :: xs  => getFlatResult(x :: xs) ::: loop(xs)
-    }
-
-    def general(list: List[List[(Char, Int)]]): List[List[(Char, Int)]] = list match {
       case Nil => Nil
       case x :: Nil => getFlatResult(x :: Nil)
       case x :: xs => {
@@ -137,7 +132,7 @@ object Anagrams {
 
 //        Console println s"Cache: ${cache}"
 //        Console println s"Head: ${x}"  
-        
+
         val headToList =  for (el <- x) yield List(el)
 
         val res = for {
@@ -145,7 +140,7 @@ object Anagrams {
           remain <- cache
         } yield head :: remain
 
-        headToList ::: res ::: general(xs)
+        headToList ::: res ::: loop(xs)
       }
     }
 

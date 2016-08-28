@@ -81,7 +81,7 @@ class AnagramsSuite extends FunSuite  {
 //  }
 //
   test("sentence anagrams: Linux rulez") {
-    val sentence = List("aa", "bb", "cc")
+    val sentence = List("Linux", "rulez")
     val anas = List(
       List("Rex", "Lin", "Zulu"),
       List("nil", "Zulu", "Rex"),
