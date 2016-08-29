@@ -222,17 +222,12 @@ object Anagrams {
 
     val comb = combinations(sentenceOccurr)
 
-//    val matchedMap = comb.filter(dictionaryByOccurrences.contains(_))
-//                      .map(x => (x, dictionaryByOccurrences(x)))
-//                      .toMap
-//    val matched = matchedMap.toList.map(_._2)
-
     val matched = comb.filter(dictionaryByOccurrences.contains(_))
                       .map(x => (x, dictionaryByOccurrences(x)))
     val matchedMap = matched.toMap
 
-    def remainingValidComb(current: Occurrences, remain: Occurrences): Option[List[Word]] = {
-      val newRemainingChars = subtract(remain, current)
+    def remainingValidComb(taken: Occurrences) = {
+      val newRemainingChars = subtract(sentenceOccurr, taken)
       val remainComb = combinations(newRemainingChars)
       val remainValidComb = remainComb.filter(matchedMap.contains(_))
 
@@ -240,9 +235,8 @@ object Anagrams {
       else Some(remainValidComb.flatMap(x => matchedMap.get(x).get))
     }
 
-    def filterRemaining(x: (Anagrams.Occurrences, List[Anagrams.Word])) = {
-      val (occurr, words) = x
-      val remain = remainingValidComb(occurr, sentenceOccurr)
+    def filterRemaining(taken: Occurrences) = {
+      val remain = remainingValidComb(taken)
 
       filterNone(remain)
     }
@@ -252,13 +246,13 @@ object Anagrams {
       case _       => false
     }
 
-    def test(data: List[(Anagrams.Occurrences, List[Anagrams.Word])], remainOccurr: Occurrences) = 
+    def initial(data: List[(Anagrams.Occurrences, List[Anagrams.Word])]) = 
       for {
-        x <- matched
-        (occurr, words) = x
-        if (filterRemaining(x))
-        y <- remainingValidComb(occurr, remainOccurr).get
+        x <- data
+        (takenChars, words) = x
         n <- words
+        if (filterRemaining(takenChars))
+        y <- remainingValidComb(takenChars).get
       } yield {
         n :: y :: Nil
       }
@@ -266,37 +260,31 @@ object Anagrams {
     def rec(alreadyMatched: List[List[Word]]) = {
       for {
         x <- alreadyMatched
-        occurr = sentenceOccurrences(x)
-        if (filterRemaining((occurr, x)))
-        y <- remainingValidComb(occurr, sentenceOccurr).get
-//        n <- x
+        taken = sentenceOccurrences(x)
+        if (filterRemaining(taken))
+        y <- remainingValidComb(taken).get
       } yield y :: x
     }
 
-    def checkForMatch(alreadyMatched: List[List[Word]]) = 
+    def collectMatches(alreadyMatched: List[List[Word]]) = 
       for {
         x <- alreadyMatched
         occurr = sentenceOccurrences(x)
         if (occurr == sentenceOccurr)
       } yield x
 
-      
-    val result = test(matched, sentenceOccurr)
-//    val result = rec(matched)
 
-    val res = checkForMatch(result)
-    res.foreach { x => println (s"MATCH: ${x}") }
+    def loop(data: List[List[Word]]): List[List[Word]] = {
+      if (data.isEmpty) Nil
+      else {
+        val alreadyMatched = collectMatches(data)
 
-    val result2 = rec(result)
-//    val result2 = test()
-    val res2 = checkForMatch(result2)
-    res2.foreach { x => println (s"MATCH: ${x}") }
+        alreadyMatched ::: loop(rec(data))
+      }
+    }
 
-    val res3 = rec(result2)
-    Console println s"Result3: ${res3.size}"
-    res3.foreach { x => println (s"MATCH: ${x}") }
-
-    res ::: res2
+    val result = initial(matched)
+    loop(result)
   }
 
 }
