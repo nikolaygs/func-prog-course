@@ -1,5 +1,8 @@
 package forcomp
 
+import com.sun.org.apache.xerces.internal.impl.xs.models.XSDFACM.Occurence
+import com.sun.org.apache.xerces.internal.impl.xs.models.XSDFACM.Occurence
+
 
 object Anagrams {
 
@@ -110,7 +113,7 @@ object Anagrams {
 
     val result = for ((char,x) <- occurrences) yield subOccurr(char, x)
 
-    Console println s"Result: ${result}"
+//    Console println s"Result: ${result}"
     
     def combine(el: (Char, Int), list: List[(Char, Int)]): List[List[(Char, Int)]] = 
       list match {
@@ -171,7 +174,7 @@ object Anagrams {
         if (updatedValue == 0) result
         else result.updated(char, updatedValue)
       } 
-    } toList
+    }.toList.sortBy(_._1)
   }
 
   /** Returns a list of all anagram sentences of the given sentence.
@@ -215,26 +218,85 @@ object Anagrams {
    *  Note: There is only one anagram of an empty sentence.
    */
   def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    val occurrences = sentenceOccurrences(sentence)
+    val sentenceOccurr = sentenceOccurrences(sentence)
 
-    val comb = combinations(occurrences)
-    
-    Console println comb
-//    def loop(sentence: Occurrences, chars: Occurrences, result: List[Sentence]): List[Sentence] = 
-//      sentence match {
-//        case Nil => result
-//        case x :: xs => {
-//          val newChars = x :: chars
-//          Console println s"newChars: ${newChars}"
-//          val res = dictionaryByOccurrences.get(newChars)
-//          Console println res
-//          loop(xs, newChars, Nil)
-//        }
-//    }
-//
-//    loop(occurrences, Nil, Nil)
-//    
-    ???
+    val comb = combinations(sentenceOccurr)
+
+//    val matchedMap = comb.filter(dictionaryByOccurrences.contains(_))
+//                      .map(x => (x, dictionaryByOccurrences(x)))
+//                      .toMap
+//    val matched = matchedMap.toList.map(_._2)
+
+    val matched = comb.filter(dictionaryByOccurrences.contains(_))
+                      .map(x => (x, dictionaryByOccurrences(x)))
+    val matchedMap = matched.toMap
+
+    def remainingValidComb(current: Occurrences, remain: Occurrences): Option[List[Word]] = {
+      val newRemainingChars = subtract(remain, current)
+      val remainComb = combinations(newRemainingChars)
+      val remainValidComb = remainComb.filter(matchedMap.contains(_))
+
+      if (remainValidComb.isEmpty) None
+      else Some(remainValidComb.flatMap(x => matchedMap.get(x).get))
+    }
+
+    def filterRemaining(x: (Anagrams.Occurrences, List[Anagrams.Word])) = {
+      val (occurr, words) = x
+      val remain = remainingValidComb(occurr, sentenceOccurr)
+
+      filterNone(remain)
+    }
+
+    def filterNone[T](opt: Option[T]) = opt match {
+      case Some(x) => true
+      case _       => false
+    }
+
+    def test(data: List[(Anagrams.Occurrences, List[Anagrams.Word])], remainOccurr: Occurrences) = 
+      for {
+        x <- matched
+        (occurr, words) = x
+        if (filterRemaining(x))
+        y <- remainingValidComb(occurr, remainOccurr).get
+        n <- words
+      } yield {
+        n :: y :: Nil
+      }
+
+    def rec(alreadyMatched: List[List[Word]]) = {
+      for {
+        x <- alreadyMatched
+        occurr = sentenceOccurrences(x)
+        if (filterRemaining((occurr, x)))
+        y <- remainingValidComb(occurr, sentenceOccurr).get
+//        n <- x
+      } yield y :: x
+    }
+
+    def checkForMatch(alreadyMatched: List[List[Word]]) = 
+      for {
+        x <- alreadyMatched
+        occurr = sentenceOccurrences(x)
+        if (occurr == sentenceOccurr)
+      } yield x
+
+      
+    val result = test(matched, sentenceOccurr)
+//    val result = rec(matched)
+
+    val res = checkForMatch(result)
+    res.foreach { x => println (s"MATCH: ${x}") }
+
+    val result2 = rec(result)
+//    val result2 = test()
+    val res2 = checkForMatch(result2)
+    res2.foreach { x => println (s"MATCH: ${x}") }
+
+    val res3 = rec(result2)
+    Console println s"Result3: ${res3.size}"
+    res3.foreach { x => println (s"MATCH: ${x}") }
+
+    res ::: res2
   }
 
 }
