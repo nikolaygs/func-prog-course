@@ -51,7 +51,12 @@ object Anagrams {
   /** Converts a sentence into its character occurrence list. */
   def sentenceOccurrences(s: Sentence): Occurrences = {    
     wordOccurrences { 
-      s.reduce(_ + _)
+      val result = s match {
+        case Nil => ""
+        case _ => s.reduce(_ + _)
+      }
+    
+      result
     }
   }
 
@@ -217,74 +222,69 @@ object Anagrams {
    *
    *  Note: There is only one anagram of an empty sentence.
    */
-  def sentenceAnagrams(sentence: Sentence): List[Sentence] = {
-    val sentenceOccurr = sentenceOccurrences(sentence)
+  def sentenceAnagrams(sentence: Sentence )= 
+    if (sentence.isEmpty) List(Nil)    
+    else {
+      val sentenceOccurr = sentenceOccurrences(sentence)
+      sentenceAnagramsNonEmpty(sentenceOccurr)
+    }
 
-    val comb = combinations(sentenceOccurr)
+  private def getMatchedCombFromDict(sentenceOccurr: Occurrences) = 
+    combinations(sentenceOccurr)
+      .filter(dictionaryByOccurrences.contains(_))
+      .map(x => (x, dictionaryByOccurrences(x)))
 
-    val matched = comb.filter(dictionaryByOccurrences.contains(_))
-                      .map(x => (x, dictionaryByOccurrences(x)))
+  private def sentenceAnagramsNonEmpty(sentenceOccurr: Occurrences): List[Sentence] = {
+    val matched = getMatchedCombFromDict(sentenceOccurr)
     val matchedMap = matched.toMap
-
+  
     def remainingValidComb(taken: Occurrences) = {
       val newRemainingChars = subtract(sentenceOccurr, taken)
       val remainComb = combinations(newRemainingChars)
       val remainValidComb = remainComb.filter(matchedMap.contains(_))
-
-      if (remainValidComb.isEmpty) None
-      else Some(remainValidComb.flatMap(x => matchedMap.get(x).get))
+  
+      remainValidComb.flatMap(x => matchedMap.get(x).get)
     }
-
-    def filterRemaining(taken: Occurrences) = {
-      val remain = remainingValidComb(taken)
-
-      filterNone(remain)
-    }
-
-    def filterNone[T](opt: Option[T]) = opt match {
-      case Some(x) => true
-      case _       => false
-    }
-
+  
     def initial(data: List[(Anagrams.Occurrences, List[Anagrams.Word])]) = 
       for {
         x <- data
         (takenChars, words) = x
         n <- words
-        if (filterRemaining(takenChars))
-        y <- remainingValidComb(takenChars).get
+        y <- remainingValidComb(takenChars)
       } yield {
         n :: y :: Nil
       }
-
-    def rec(alreadyMatched: List[List[Word]]) = {
+  
+    def findPossibleMatches(alreadyMatched: List[List[Word]]) = {
       for {
         x <- alreadyMatched
         taken = sentenceOccurrences(x)
-        if (filterRemaining(taken))
-        y <- remainingValidComb(taken).get
+        y <- remainingValidComb(taken)
       } yield y :: x
     }
 
-    def collectMatches(alreadyMatched: List[List[Word]]) = 
+    def filterMatches(alreadyMatched: List[List[Word]]) = 
       for {
         x <- alreadyMatched
-        occurr = sentenceOccurrences(x)
-        if (occurr == sentenceOccurr)
+        taken = sentenceOccurrences(x)
+        if (taken == sentenceOccurr)
       } yield x
 
 
     def loop(data: List[List[Word]]): List[List[Word]] = {
       if (data.isEmpty) Nil
       else {
-        val alreadyMatched = collectMatches(data)
-
-        alreadyMatched ::: loop(rec(data))
+        val alreadyMatched = filterMatches(data)
+        val possibleMatches = findPossibleMatches(data)
+        alreadyMatched ::: loop(possibleMatches)
       }
     }
+  
+    val singleWordMatch = filterMatches(for (x <- matched; (_, words) = x) yield words)
 
     val result = initial(matched)
-    loop(result)
+    singleWordMatch ::: loop(result)
   }
 
 }
