@@ -26,18 +26,17 @@ object Main {
    * Exercise 2
    */
     def balance(chars: List[Char]): Boolean = {
+      def updateCount(char: Char, count: Int) = 
+        if (char == '(') count + 1
+        else if (char == ')') count - 1
+        else count
+
       @tailrec
       def rec(chars: List[Char], count: Int): Boolean = {
         if (chars.isEmpty) count == 0
         else {
-          val char = chars.head
-          val newCount = 
-            if (char == '(') count + 1
-            else if (char == ')') count - 1
-            else count
-
           if (count < 0) false
-          else rec(chars.tail, newCount)
+          else rec(chars.tail, updateCount(chars.head, count))
         }
       }
 
@@ -49,12 +48,9 @@ object Main {
    */
     def countChange(money: Int, coins: List[Int]): Int = {
       
-      def sum(amount: Int, f: (Int, List[Int]) => Int, coins: List[Int]): Int = {
+      def sum(amount: Int, count: (Int, List[Int]) => Int, coins: List[Int]): Int = 
         if (coins.isEmpty) 0
-        else
-          f(amount, coins) + 
-          sum(amount, f, coins.tail)
-      }
+        else count(amount, coins) + sum(amount, count, coins.tail)
 
       def count(amount: Int, coins: List[Int]): Int = {
         if (coins.isEmpty) 0
@@ -77,15 +73,12 @@ object Main {
       else {
         val head = list.head
         if (elem > head) elem :: list
-        else {
-          head :: insertEl(elem, list.tail)
-        }
+        else head :: insertEl(elem, list.tail)
       }
     }
 
     private def sort(list: List[Int]) = {
-      insertEl(list.head, list.tail)
-      
+      @tailrec
       def buildList(from: List[Int], to: List[Int]): List[Int] = {
         if (from.isEmpty) to
         else buildList(from.tail, insertEl(from.head, to))
