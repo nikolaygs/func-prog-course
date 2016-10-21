@@ -47,43 +47,14 @@ object Main {
    * Exercise 3
    */
     def countChange(money: Int, coins: List[Int]): Int = {
-      
-      def sum(amount: Int, count: (Int, List[Int]) => Int, coins: List[Int]): Int = 
-        if (coins.isEmpty) 0
-        else count(amount, coins) + sum(amount, count, coins.tail)
-
-      def count(amount: Int, coins: List[Int]): Int = {
-        if (coins.isEmpty) 0
-        else {
-          val biggest = coins.head
-          val remainder = amount - biggest
-          if (remainder < 0) 0
-          else if (remainder == 0) 1
-          else sum(remainder, count, coins)
-        }
-      }
-
-      val sortedCoins = if(!coins.isEmpty) sort(coins)
-                        else Nil
-      sum(money, count, sortedCoins)
-    }
-
-    private def insertEl(elem: Int, list: List[Int]): List[Int] = {
-      if (list.isEmpty) elem :: Nil
+      if (money == 0) 1
+      else if (coins.isEmpty || money < 0) 0
       else {
-        val head = list.head
-        if (elem > head) elem :: list
-        else head :: insertEl(elem, list.tail)
+        val biggest = coins.head
+        val remainder = money  - biggest
+        if (remainder < 0) 0 + countChange(money, coins.tail)
+        else if (remainder == 0) 1 + countChange(money, coins.tail)
+        else countChange(remainder, coins) + countChange(money, coins.tail)
       }
     }
-
-    private def sort(list: List[Int]) = {
-      @tailrec
-      def buildList(from: List[Int], to: List[Int]): List[Int] = {
-        if (from.isEmpty) to
-        else buildList(from.tail, insertEl(from.head, to))
-      }
-
-      buildList(list, Nil)
-    }
-  }
+}

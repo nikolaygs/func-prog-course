@@ -13,6 +13,18 @@ class CountChangeSuite extends FunSuite {
     assert(countChange(4,List(1,2)) === 3)
   }
 
+  test("countChange: 8 (1, 5, 2)") {
+    assert(countChange(8,List(1, 2, 5)) === 7)
+  }
+
+  test("countChange: 7 (5, 2)") {
+    assert(countChange(7, List(5, 2)) === 1)
+  }
+
+  test("check(50, List(10, 5, 2, 1), 341)") {
+    assert(countChange(50, List(10, 5, 2, 1)) === 341)    
+  }
+
   test("countChange: sorted CHF") {
     assert(countChange(300,List(5,10,20,50,100,200,500)) === 1022)
   }
